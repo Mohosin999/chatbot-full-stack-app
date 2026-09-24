@@ -26,7 +26,7 @@ export class GeminiProvider implements AIProvider {
   private getModel(config?: GenerationConfig) {
     const hasConfig = config && Object.keys(config).length > 0;
     return genAI.getGenerativeModel({
-      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+      model: process.env.GEMINI_MODEL || "gemini-3.1-flash-lite",
       ...(hasConfig ? { generationConfig: this.mapConfig(config!) } : {}),
     });
   }
