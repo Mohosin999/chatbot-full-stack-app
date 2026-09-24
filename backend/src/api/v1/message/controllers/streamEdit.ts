@@ -55,11 +55,21 @@ const streamEdit = async (
     if ((error as Error).name === "AbortError") return;
     const errorMessage = error instanceof Error ? error.message : "Stream failed";
     const isQuota = errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("Quota");
-    const friendlyMessage = isQuota
-      ? "AI service quota exceeded. Please wait a moment and try again."
-      : errorMessage.length > 200
-        ? errorMessage.slice(0, 200) + "..."
-        : errorMessage;
+    const isOverloaded =
+      errorMessage.includes("503") ||
+      errorMessage.includes("overloaded") ||
+      errorMessage.includes("Overloaded") ||
+      errorMessage.includes("Service Unavailable") ||
+      errorMessage.includes("currently overloaded") ||
+      errorMessage.includes("model is currently");
+    let friendlyMessage: string;
+    if (isQuota) {
+      friendlyMessage = "AI service quota exceeded. Please wait a moment and try again.";
+    } else if (isOverloaded) {
+      friendlyMessage = "AI model is overloaded. Please try again in a moment.";
+    } else {
+      friendlyMessage = errorMessage.length > 200 ? errorMessage.slice(0, 200) + "..." : errorMessage;
+    }
     console.error("[StreamEdit] Error:", friendlyMessage);
     res.write(`data: ${JSON.stringify({ error: friendlyMessage })}\n\n`);
     res.end();
